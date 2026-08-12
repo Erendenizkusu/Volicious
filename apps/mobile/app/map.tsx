@@ -3,20 +3,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { fetchNearby } from "@/lib/api";
+import { fetchNearby, SEARCH_RADIUS_M } from "@/lib/api";
 import { colors, font } from "@/lib/theme";
 import { t } from "@/lib/i18n";
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { lat, lng } = useLocalSearchParams<{ lat: string; lng: string }>();
+  const { lat, lng, cat } = useLocalSearchParams<{ lat: string; lng: string; cat?: string }>();
   const latN = Number(lat);
   const lngN = Number(lng);
+  const catKey = cat ?? "all";
 
+  // Keşif ekranıyla AYNI sorgu anahtarı + parametreler → harita önbellekten okur, YENİ bir
+  // kota/Google çağrısı YAPMAZ (staleTime penceresi içinde). Aksi halde harita her açılışta
+  // ikinci bir istek harcardı (maliyet + kota bitmesi).
   const { data } = useQuery({
-    queryKey: ["nearby", latN, lngN],
-    queryFn: () => fetchNearby(latN, lngN),
+    queryKey: ["nearby", latN, lngN, catKey],
+    queryFn: () => fetchNearby(latN, lngN, SEARCH_RADIUS_M, catKey),
     enabled: Number.isFinite(latN) && Number.isFinite(lngN),
   });
   const places = data?.kind === "ok" ? data.result.places : [];

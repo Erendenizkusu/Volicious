@@ -21,9 +21,15 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { colors } from "@/lib/theme";
+import { initClientId } from "@/lib/clientId";
 
 SplashScreen.preventAutoHideAsync();
-const queryClient = new QueryClient();
+
+// Maliyet güvenliği: aynı sorgu (ör. keşif → harita → geri) 5 dk boyunca yeniden çekilmez →
+// gereksiz Google çağrısı + kota tüketimi olmaz. Kota yalnızca gerçekten yeni aramada harcanır.
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 5 * 60 * 1000, gcTime: 30 * 60 * 1000 } },
+});
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -37,6 +43,11 @@ export default function RootLayout() {
     Fraunces_600SemiBold,
     Fraunces_500Medium_Italic,
   });
+
+  // Kalıcı cihaz kimliğini açılışta yükle (kota bu kimliğe bağlı; ilk fetch'ten önce hazır olmalı).
+  useEffect(() => {
+    initClientId();
+  }, []);
 
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync();

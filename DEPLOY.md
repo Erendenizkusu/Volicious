@@ -54,7 +54,7 @@ Vercel → **Add New → Project → GitHub → Erendenizkusu/Volicious**.
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role secret | zorunlu, gizli |
 | `GOOGLE_PLACES_API_KEY` | Google Places (New) anahtarı | cache-miss için zorunlu |
 | `OPENAI_API_KEY` | OpenAI anahtarı (gpt-4o-mini) | AI highlights + kategori-uyum için; yoksa AI devre dışı |
-| `FREE_REQUESTS_PER_DAY` | `2` | maliyet güvenliği |
+| `FREE_REQUESTS_PER_DAY` | `1` | maliyet güvenliği (cihaz başına günde 1 ücretsiz keşif) |
 | `AD_GRANT_REQUESTS` | `1` | reklam başı +istek |
 | `DAILY_GOOGLE_BUDGET` | `300` | günlük Google çağrı tavanı (trafik/bütçeye göre ayarla) |
 | `MONTHLY_GOOGLE_BUDGET` | `5000` | aylık tavan |

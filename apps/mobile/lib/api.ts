@@ -7,6 +7,12 @@ import { getClientId } from "@/lib/clientId";
 // .env içinde EXPO_PUBLIC_API_BASE_URL ile ayarla.
 const BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:8787";
 
+/**
+ * Keşif yarıçapı (metre). Keşif ekranı ve harita ekranı AYNI değeri kullanmalı ki ikisi tek
+ * önbellek anahtarını paylaşsın → harita açmak ikinci bir kota/Google çağrısı YAPMAZ.
+ */
+export const SEARCH_RADIUS_M = 4000;
+
 /** Maliyet güvenliği kotası (RELEASE.md § A) — sunucudan header ile gelir. */
 export interface Quota {
   remaining: number | null;

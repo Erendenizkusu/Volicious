@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { categoryCtaNoun, categoryLabel, type ScoredPlace } from "@truebite/shared";
-import { fetchNearby, grantQuota } from "@/lib/api";
+import { fetchNearby, grantQuota, SEARCH_RADIUS_M } from "@/lib/api";
 import { showRewardedAd } from "@/lib/ads";
 import {
   locate,
@@ -33,6 +33,9 @@ import { FoodRain } from "@/components/FoodRain";
 // Konum verilmezse rastgele şehir DEMOSU göstermeyiz (yanıltıcı) → "konumunu paylaş" ekranı.
 type Status = "idle" | "locating" | "ready" | "denied";
 type Coords = { lat: number; lng: number };
+// Tek arama = tek kota/Google maliyeti. Yalnızca kullanıcı butona basınca "işlenmiş" arama
+// (search) kurulur; kategori chip'ini değiştirmek OTOMATİK arama tetiklemez (maliyet + UX).
+type Search = { lat: number; lng: number; catKey: string };
 
 export default function Discover() {
   const insets = useSafeAreaInsets();
@@ -42,15 +45,18 @@ export default function Discover() {
   const [status, setStatus] = useState<Status>("idle");
   // Engelin türü — "izin yok" ile "cihazın konum servisi kapalı" farklı çözümler ister.
   const [blocker, setBlocker] = useState<Blocker | null>(null);
+  // İşlenmiş arama: butona basılınca kurulur. Sorgu yalnızca buna bağlıdır (chip'e değil).
+  const [search, setSearch] = useState<Search | null>(null);
   const cat = CATEGORIES[catIdx]!;
 
   const [granting, setGranting] = useState(false);
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ["nearby", coords?.lat, coords?.lng, cat.key],
-    queryFn: () => fetchNearby(coords!.lat, coords!.lng, 4000, cat.key),
-    enabled: status === "ready" && !!coords,
+    queryKey: ["nearby", search?.lat, search?.lng, search?.catKey],
+    queryFn: () => fetchNearby(search!.lat, search!.lng, SEARCH_RADIUS_M, search!.catKey),
+    enabled: !!search,
   });
   // Ayrıştırılmış dönüş: ok / kota-doldu / hata.
+  const searched = !!search;
   const result = data?.kind === "ok" ? data.result : null;
   const places = result?.places ?? [];
   const quotaExceeded = data?.kind === "quota";
@@ -70,16 +76,29 @@ export default function Discover() {
   }
 
   async function locateAndSearch() {
+    // Konum zaten alınmışsa tekrar GPS'e gitme; seçili kategori için doğrudan yeni arama başlat.
+    if (coords && status === "ready") {
+      setSearch({ lat: coords.lat, lng: coords.lng, catKey: cat.key });
+      return;
+    }
     setStatus("locating");
     const r = await locate();
     if (r.ok) {
       setCoords({ lat: r.lat, lng: r.lng });
       setBlocker(null);
       setStatus("ready");
+      setSearch({ lat: r.lat, lng: r.lng, catKey: cat.key });
       return;
     }
     setBlocker(r.blocker);
     setStatus("denied");
+  }
+
+  // Kategori değişince OTOMATİK arama YAPMA: yalnızca seçimi değiştir ve önceki sonuçları
+  // temizle → kullanıcı butona basınca seçili kategoride arar (her arama bir kota harcar).
+  function selectCategory(i: number) {
+    setCatIdx(i);
+    setSearch(null);
   }
 
   // Kullanıcı sistem konum ayarlarına gidip GPS'i açtıysa, geri döndüğünde uygulamayı elle
@@ -95,10 +114,9 @@ export default function Discover() {
   }, []);
 
   // Konum verilmezse (denied) sonuç göstermeyiz → engele uygun yönlendirme ekranı gösteririz.
-  const ready = status === "ready";
   // Liste henüz yokken (idle/konum/iskelet/boş/kota) hero'yu dikey ortala → buton-altı
   // boşluk kapanır, içerik üste sıkışmaz. Gerçek sonuç gelince üstten normal akışa döner.
-  const hasResults = ready && !quotaExceeded && places.length > 0;
+  const hasResults = searched && !quotaExceeded && places.length > 0;
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: colors.paper }}>
@@ -110,33 +128,34 @@ export default function Discover() {
       </View>
 
       <FlatList
-        data={ready && !quotaExceeded ? places : []}
+        data={searched && !quotaExceeded ? places : []}
         keyExtractor={(p: ScoredPlace) => p.placeId}
         renderItem={({ item, index }) => <SpotCard place={item} rank={index + 1} />}
         ListHeaderComponent={
           <Hero
             cat={cat}
             catIdx={catIdx}
-            onCat={setCatIdx}
+            onCat={selectCategory}
             status={status}
             blocker={blocker}
             onLocate={locateAndSearch}
-            resultCount={ready && !quotaExceeded ? places.length : null}
+            resultCount={searched && !quotaExceeded ? places.length : null}
             remaining={remaining}
             cacheHit={result?.cacheHit}
             onMap={() =>
-              coords && router.push(`/map?lat=${coords.lat}&lng=${coords.lng}`)
+              search &&
+              router.push(`/map?lat=${search.lat}&lng=${search.lng}&cat=${search.catKey}`)
             }
           />
         }
         ListEmptyComponent={
           quotaExceeded ? (
             <LimitReached onWatchAd={watchAdForMore} granting={granting} />
-          ) : status === "locating" || (ready && isFetching) ? (
+          ) : status === "locating" || (searched && isFetching) ? (
             <Skeleton />
           ) : status === "denied" ? (
             <LocationPrompt blocker={blocker} onRetry={locateAndSearch} />
-          ) : ready ? (
+          ) : searched ? (
             <Empty />
           ) : null
         }

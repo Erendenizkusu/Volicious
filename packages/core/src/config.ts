@@ -38,7 +38,9 @@ const envSchema = z.object({
 
   // ─── Maliyet güvenliği (RELEASE.md § A / altın kural) ───
   // Kullanıcı(cihaz) başına GÜNLÜK ücretsiz istek. Bitince reklam izle → +istek.
-  FREE_REQUESTS_PER_DAY: z.coerce.number().int().nonnegative().default(2),
+  // MVP maliyet güvenliği: reklam geliri oturana kadar cihaz başına günde 1 ücretsiz keşif
+  // (altın kural — [[monetization-cost-rule]]). Büyüyünce artırılabilir (env ile override).
+  FREE_REQUESTS_PER_DAY: z.coerce.number().int().nonnegative().default(1),
   // Bir rewarded ad kaç ek istek kazandırır.
   AD_GRANT_REQUESTS: z.coerce.number().int().positive().default(1),
   // Global GÜNLÜK Google Places çağrı tavanı (sert maliyet koruması). ~$0.032/çağrı →
