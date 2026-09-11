@@ -8,6 +8,7 @@ import {
   StyleSheet,
   AppState,
   Platform,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
@@ -69,7 +70,13 @@ export default function Discover() {
     setGranting(true);
     try {
       const earned = await showRewardedAd();
-      if (earned && (await grantQuota())) await refetch();
+      if (earned && (await grantQuota())) {
+        await refetch();
+      } else {
+        // Reklam gelmedi/yarıda kaldı ya da hak verilemedi: kullanıcıyı sessizce takılı bırakma
+        // → net geri bildirim ver (buton her koşulda YANIT vermeli; App Store 2.1 completeness).
+        Alert.alert(t.limit.adUnavailableTitle, t.limit.adUnavailableText);
+      }
     } finally {
       setGranting(false);
     }

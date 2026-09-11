@@ -20,7 +20,11 @@ const REWARDED_UNIT_ID_ANDROID = "ca-app-pub-2707472203466324/7167483078";
 const REWARDED_UNIT_ID_IOS = "ca-app-pub-2707472203466324/6836285909";
 
 const inExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-const AD_TIMEOUT_MS = 30_000;
+// SADECE reklamın YÜKLENMESİ için üst sınır. Reklam gelmezse (örn. "no-fill") kullanıcıyı uzun
+// süre bekletmeyiz → çağıran taraf net bir uyarı gösterir (buton ölü GÖRÜNMEMELİ; App Store
+// incelemesinde yeni hesaplar sık sık reklam alamaz). LOADED gelince aşağıda iptal edilir, yani
+// kullanıcı reklamı izlerken bu zaman aşımı akışı KESMEZ.
+const AD_LOAD_TIMEOUT_MS = 10_000;
 
 let initialized = false;
 
@@ -55,13 +59,19 @@ export async function showRewardedAd(): Promise<boolean> {
       });
       let earned = false;
       let settled = false;
+      let loadTimer: ReturnType<typeof setTimeout> | undefined;
       const finish = (v: boolean) => {
         if (settled) return;
         settled = true;
+        if (loadTimer) clearTimeout(loadTimer);
         resolve(v);
       };
 
-      rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => rewarded.show());
+      rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+        // Reklam yüklendi → yükleme zaman aşımını iptal et (izleme uzun sürebilir, kesilmesin).
+        if (loadTimer) clearTimeout(loadTimer);
+        rewarded.show();
+      });
       rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
         earned = true;
       });
@@ -69,8 +79,8 @@ export async function showRewardedAd(): Promise<boolean> {
       rewarded.addAdEventListener(AdEventType.ERROR, () => finish(false));
 
       rewarded.load();
-      // Güvenlik zaman aşımı: yüklenmez/gösterilmezse kullanıcıyı sonsuza dek bekletme.
-      setTimeout(() => finish(false), AD_TIMEOUT_MS);
+      // Yalnızca YÜKLEME için zaman aşımı; LOADED gelince yukarıda iptal edilir.
+      loadTimer = setTimeout(() => finish(false), AD_LOAD_TIMEOUT_MS);
     });
   } catch {
     return false; // native modül yoksa/patlarsa: ödül yok, akış kırılmaz

@@ -40,7 +40,15 @@ interface Dict {
     scoreLabel: string;
   };
   empty: { title: string; text: string };
-  limit: { title: string; text: string; cta: string; ctaBusy: string; note: string };
+  limit: {
+    title: string;
+    text: string;
+    cta: string;
+    ctaBusy: string;
+    note: string;
+    adUnavailableTitle: string;
+    adUnavailableText: string;
+  };
   location: {
     servicesTitle: string;
     servicesText: string;
@@ -103,6 +111,9 @@ const tr: Dict = {
     cta: "Reklam izle → 1 keşif daha",
     ctaBusy: "hazırlanıyor…",
     note: "Kota her gün sıfırlanır.",
+    adUnavailableTitle: "Şu an gösterilecek reklam yok",
+    adUnavailableText:
+      "Şu anda uygun bir reklam bulunamadı. Birazdan tekrar deneyebilir ya da yarın ücretsiz keşif hakkınla devam edebilirsin.",
   },
   location: {
     servicesTitle: "Cihazının konumu kapalı",
@@ -171,6 +182,9 @@ const en: Dict = {
     cta: "Watch an ad → 1 more search",
     ctaBusy: "getting ready…",
     note: "Your quota resets every day.",
+    adUnavailableTitle: "No ad available right now",
+    adUnavailableText:
+      "We couldn't find an ad to show at the moment. Please try again shortly, or come back tomorrow for your free search.",
   },
   location: {
     servicesTitle: "Your device's location is off",
