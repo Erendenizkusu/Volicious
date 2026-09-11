@@ -5,21 +5,18 @@ import { Mark } from "./Mark";
 
 /**
  * Dil değiştirici AYNI sayfanın öbür dildeki adresine gider (kullanıcıyı ana sayfaya atmaz).
- * `page` sabit sayfalar (home/about/privacy) için; `altHref` ise dinamik rehber sayfaları
- * gibi `Page` sözlüğünde olmayan adresler için doğrudan öbür-dil URL'i verir (öncelikli).
+ * `page` sabit sayfalar (home/about/privacy) için kullanılır.
  */
 export function SiteHeader({
   locale,
   page = "home",
-  altHref,
 }: {
   locale: Locale;
   page?: Page;
-  altHref?: string;
 }) {
   const t = getDict(locale).nav;
   const other: Locale = locale === "tr" ? "en" : "tr";
-  const switchHref = altHref ?? localePath(other, page);
+  const switchHref = localePath(other, page);
 
   return (
     <header className="absolute inset-x-0 top-0 z-30">

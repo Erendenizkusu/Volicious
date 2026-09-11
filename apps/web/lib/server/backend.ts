@@ -119,7 +119,7 @@ export function checkQuota(clientId: string): Promise<QuotaResult> {
 }
 
 /** Nearby çekirdek akışı (cache + bütçe kapısı içeride). opts.cacheTtlDays ile bu çağrıya özel
- *  önbellek tazelik penceresi geçilebilir (şehir rehberi 30 gün kullanır → ana keşifi etkilemez). */
+ *  önbellek tazelik penceresi geçilebilir. */
 export function runNearby(
   q: NearbyQuery,
   opts?: { cacheTtlDays?: number },
