@@ -12,6 +12,10 @@ export interface GuideLink {
   href: string;
 }
 
+// Yapısal veri (JSON-LD) MUTLAK URL ister: BreadcrumbList item'ı göreli yol olursa Google
+// "id alanında geçersiz URL" uyarısı verir. Origin, layout.tsx metadataBase ile aynı.
+const SITE_ORIGIN = "https://volicious.app";
+
 /**
  * Şehir/kategori rehber sayfası — TAM SUNUCU-RENDER (SSR/ISR). Ana keşif ekranından ayrı,
  * ikincil rehber yüzeyi. Gerçek siteyle aynı tasarım dili (koyu müze paleti + Fraunces).
@@ -53,7 +57,12 @@ export function GuidePage({
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: content.breadcrumb.home, item: homeHref },
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: content.breadcrumb.home,
+            item: `${SITE_ORIGIN}${homeHref}`,
+          },
           { "@type": "ListItem", position: 2, name: content.breadcrumb.city },
           { "@type": "ListItem", position: 3, name: content.listHeading },
         ],
