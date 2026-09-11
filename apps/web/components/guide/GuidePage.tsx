@@ -63,8 +63,10 @@ export function GuidePage({
             name: content.breadcrumb.home,
             item: `${SITE_ORIGIN}${homeHref}`,
           },
+          // Son öğe (mevcut sayfa): Google son breadcrumb öğesinde item BEKLEMEZ. Ara öğe
+          // bırakmıyoruz — ara ListItem'larda item (URL) ZORUNLU, yoksa "item eksik" uyarısı
+          // çıkar. Görsel breadcrumb da (Ana sayfa / Şehir) bu 2 seviyeyle birebir.
           { "@type": "ListItem", position: 2, name: content.breadcrumb.city },
-          { "@type": "ListItem", position: 3, name: content.listHeading },
         ],
       },
       {
