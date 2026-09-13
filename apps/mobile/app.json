@@ -3,7 +3,7 @@
     "name": "Volicious",
     "slug": "volicious",
     "scheme": "volicious",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -20,7 +20,7 @@
         "NSLocationWhenInUseUsageDescription": "Yakınındaki gerçekten en iyi mekanları göstermek için konumunu kullanıyoruz.",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "android": {
       "package": "app.volicious",
