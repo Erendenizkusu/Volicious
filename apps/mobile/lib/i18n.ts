@@ -1,15 +1,20 @@
 import { getLocales } from "expo-localization";
-import { normalizeLocale, type Locale } from "@truebite/shared";
+import { type Locale } from "@truebite/shared";
 
 /**
  * Mobil sözlük. Kategori/AI-etiket/biçimlendirme metinleri BURADA DEĞİL — onlar
  * `@truebite/shared` içindedir (web ile senkron kalmak zorunda).
  *
  * Dil, CİHAZ DİLİNDEN belirlenir ve uygulama ömrü boyunca sabittir (kullanıcı sistem dilini
- * değiştirirse uygulama zaten yeniden başlar). Bu yüzden modül seviyesinde tek sefer çözülür —
+ * değiştirirse uygulama zaten yeniden başlar). Bu yüzden modül seviyesinde tek sefer çözülür,
  * context/provider gerekmez.
+ *
+ * DİL SEÇİMİ: cihaz dili YALNIZCA Türkçe ise Türkçe; diğer TÜM diller (İngilizce, Hollandaca,
+ * Almanca, Fransızca...) İngilizce görür. Türkçe Türk kullanıcılar içindir; Türkiye dışındaki
+ * bir kullanıcı Türkçe değil İngilizce bekler. (Web'in kök=TR SEO mantığından ayrı, ürün kararı.)
  */
-export const locale: Locale = normalizeLocale(getLocales()[0]?.languageCode);
+const deviceLang = getLocales()[0]?.languageCode?.toLowerCase().split(/[-_]/)[0];
+export const locale: Locale = deviceLang === "tr" ? "tr" : "en";
 
 interface Dict {
   header: { tagline: string };
